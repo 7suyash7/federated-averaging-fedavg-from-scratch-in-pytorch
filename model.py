@@ -107,8 +107,41 @@ def partition_data_iid(train_features, train_labels, num_clients, seed):
 
     return partitions
 
-# Step 5 - partition_data_non_iid (not yet solved)
-# TODO: implement
+# Step 5 - partition_data_non_iid
+def partition_data_non_iid(train_features, train_labels, num_clients, shards_per_client, seed):
+    num_samples = train_features.shape[0]
+
+    if num_clients <= 0:
+        num_clients = 1
+    
+    if shards_per_client <= 0:
+        shards_per_client = 1
+    
+    num_shards = num_clients * shards_per_client
+
+    sorted_indices = torch.argsort(train_labels)
+
+    generator = torch.Generator()
+    generator.manual_seed(seed)
+    shard_order = torch.randperm(num_shards, generator=generator)
+
+    shards = torch.tensor_split(sorted_indices, num_shards)
+
+    partitions = []
+
+    for client_id in range(num_clients):
+        client_shard_ids = shard_order[
+            client_id * shards_per_client : (client_id + 1) * shards_per_client
+        ]
+
+        client_indices = torch.cat([shards[shard_id] for shard_id in client_shard_ids])
+
+        client_features = train_features[client_indices]
+        client_labels = train_labels[client_indices]
+
+        partitions.append((client_features, client_labels))
+    
+    return partitions
 
 # Step 6 - count_client_samples (not yet solved)
 # TODO: implement
