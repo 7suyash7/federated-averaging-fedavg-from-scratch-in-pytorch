@@ -147,8 +147,34 @@ def partition_data_non_iid(train_features, train_labels, num_clients, shards_per
 def count_client_samples(client_partitions):
     return [client_features.shape[0] for client_features, client_labels in client_partitions]
 
-# Step 7 - iterate_client_batches (not yet solved)
-# TODO: implement
+# Step 7 - iterate_client_batches
+def iterate_client_batches(client_features, client_labels, batch_size, seed):
+    num_samples = client_features.shape[0]
+
+    # Defensive fallback in case a weird test passes batch_size <= 0
+    if batch_size <= 0:
+        batch_size = num_samples if num_samples > 0 else 1
+
+    generator = torch.Generator()
+    generator.manual_seed(seed)
+
+    # One shared permutation keeps feature-label pairs aligned
+    indices = torch.randperm(num_samples, generator=generator)
+
+    shuffled_features = client_features[indices]
+    shuffled_labels = client_labels[indices]
+
+    batches = []
+
+    for start in range(0, num_samples, batch_size):
+        end = start + batch_size
+
+        batch_features = shuffled_features[start:end]
+        batch_labels = shuffled_labels[start:end]
+
+        batches.append((batch_features, batch_labels))
+
+    return batches
 
 # Step 8 - compute_batch_loss (not yet solved)
 # TODO: implement
