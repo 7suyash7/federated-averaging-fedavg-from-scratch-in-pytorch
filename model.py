@@ -49,8 +49,26 @@ def build_synthetic_dataset(num_samples, input_size, num_classes, seed):
 
     return features.float(), labels
 
-# Step 3 - train_test_split_dataset (not yet solved)
-# TODO: implement
+# Step 3 - train_test_split_dataset
+def train_test_split_dataset(features, labels, test_fraction, seed):
+    num_samples = features.shape[0]
+    num_test = int(num_samples * test_fraction)
+
+    generator = torch.Generator()
+    generator.manual_seed(seed)
+
+    indices = torch.randperm(num_samples, generator=generator)
+
+    test_indices = indices[:num_test]
+    train_indices = indices[num_test:]
+
+    train_features = features[train_indices]
+    train_labels = labels[train_indices]
+
+    test_features = features[test_indices]
+    test_labels = labels[test_indices]
+
+    return train_features, train_labels, test_features, test_labels
 
 # Step 4 - partition_data_iid (not yet solved)
 # TODO: implement
