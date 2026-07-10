@@ -184,8 +184,17 @@ def compute_batch_loss(model, batch_features, batch_labels):
     loss = F.cross_entropy(logits, batch_labels)
     return loss
 
-# Step 9 - local_sgd_step (not yet solved)
-# TODO: implement
+# Step 9 - local_sgd_step
+def local_sgd_step(model, optimizer, batch_features, batch_labels):
+    optimizer.zero_grad()
+
+    loss = compute_batch_loss(model, batch_features, batch_labels)
+
+    loss.backward()
+
+    optimizer.step()
+
+    return loss.item()
 
 # Step 10 - train_client_local (not yet solved)
 # TODO: implement
