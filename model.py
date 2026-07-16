@@ -507,8 +507,34 @@ def compute_non_iid_gap(iid_accuracies, non_iid_accuracies):
         "gap": gap,
     }
 
-# Step 25 - rounds_to_target_vs_local_epochs (not yet solved)
-# TODO: implement
+# Step 25 - rounds_to_target_vs_local_epochs
+def rounds_to_target_vs_local_epochs(client_partitions, test_features, test_labels, model_config, local_epochs_list, target_accuracy, num_rounds, client_fraction, batch_size, learning_rate, seed):
+    results = {}
+
+    for local_epochs in local_epochs_list:
+        model, accuracies = run_fedavg(
+            client_partitions,
+            test_features,
+            test_labels,
+            model_config,
+            num_rounds,
+            client_fraction,
+            local_epochs,
+            batch_size,
+            learning_rate,
+            seed,
+        )
+
+        first_reached = None
+
+        for round_idx, accuracy in enumerate(accuracies):
+            if accuracy >= target_accuracy:
+                first_reached = round_idx
+                break
+        
+        results[local_epochs] = first_reached
+    
+    return results
 
 # Step 26 - accuracy_vs_client_fraction (not yet solved)
 # TODO: implement
