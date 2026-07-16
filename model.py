@@ -297,8 +297,41 @@ def select_round_clients(num_clients, client_fraction, seed):
 
     return sorted(selected.tolist())
 
-# Step 18 - run_communication_round (not yet solved)
-# TODO: implement
+# Step 18 - run_communication_round
+def run_communication_round(global_state, client_partitions, selected_clients, model_config, local_epochs, batch_size, learning_rate, seed):
+    trained_client_states = []
+    selected_sample_counts = []
+
+    for client_id in selected_clients:
+        client_features, client_labels = client_partitions[client_id]
+
+        model = build_mlp_classifier(
+            model_config["input_size"],
+            model_config["hidden_size"],
+            model_config["num_classes"],
+        )
+
+        load_model_state(model, global_state)
+
+        client_state = train_client_local(
+            model,
+            client_features,
+            client_labels,
+            local_epochs,
+            batch_size,
+            learning_rate,
+            seed + client_id,
+        )
+
+        trained_client_states.append(client_state)
+        selected_sample_counts.append(client_features.shape[0])
+    
+    new_global_state = aggregate_weighted_average(
+        trained_client_states,
+        selected_sample_counts,
+    )
+
+    return new_global_state
 
 # Step 19 - evaluate_accuracy (not yet solved)
 # TODO: implement
