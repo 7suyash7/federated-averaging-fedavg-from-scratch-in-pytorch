@@ -333,8 +333,17 @@ def run_communication_round(global_state, client_partitions, selected_clients, m
 
     return new_global_state
 
-# Step 19 - evaluate_accuracy (not yet solved)
-# TODO: implement
+# Step 19 - evaluate_accuracy
+def evaluate_accuracy(model, test_features, test_labels):
+    model.eval()
+
+    with torch.no_grad():
+        logits = model(test_features)
+        predictions = torch.argmax(logits, dim=1)
+        correct = predictions == test_labels
+        accuracy = correct.float().mean().item()
+    
+    return accuracy
 
 # Step 20 - run_fedavg (not yet solved)
 # TODO: implement
