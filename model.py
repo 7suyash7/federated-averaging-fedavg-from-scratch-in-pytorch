@@ -7,10 +7,7 @@ Assembled from your step-by-step solutions.
 import numpy as np
 
 # Step 1 - build_mlp_classifier
-import torch
-import torch.nn as nn
-
-class MLPClassifier(nn.Module):
+class _MLPClassifier(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes):
         super().__init__()
 
@@ -24,8 +21,9 @@ class MLPClassifier(nn.Module):
         logits = self.fc2(x)
         return logits
 
+
 def build_mlp_classifier(input_size, hidden_size, num_classes):
-    return MLPClassifier(input_size, hidden_size, num_classes)
+    return _MLPClassifier(input_size, hidden_size, num_classes)
 
 # Step 2 - build_synthetic_dataset
 def build_synthetic_dataset(num_samples, input_size, num_classes, seed):
@@ -345,8 +343,73 @@ def evaluate_accuracy(model, test_features, test_labels):
     
     return accuracy
 
-# Step 20 - run_fedavg (not yet solved)
-# TODO: implement
+# Step 20 - run_fedavg
+def run_fedavg(
+    client_partitions,
+    test_features,
+    test_labels,
+    model_config,
+    num_rounds,
+    client_fraction,
+    local_epochs,
+    batch_size,
+    learning_rate,
+    seed,
+):
+    global_state = initialize_global_state(
+        model_config["input_size"],
+        model_config["hidden_size"],
+        model_config["num_classes"],
+        seed,
+    )
+
+    per_round_accuracies = []
+
+    for round_idx in range(num_rounds):
+        round_seed = seed + round_idx
+
+        selected_clients = select_round_clients(
+            len(client_partitions),
+            client_fraction,
+            round_seed,
+        )
+
+        global_state = run_communication_round(
+            global_state,
+            client_partitions,
+            selected_clients,
+            model_config,
+            local_epochs,
+            batch_size,
+            learning_rate,
+            round_seed,
+        )
+
+        global_model = build_mlp_classifier(
+            model_config["input_size"],
+            model_config["hidden_size"],
+            model_config["num_classes"],
+        )
+
+        load_model_state(global_model, global_state)
+
+        accuracy = evaluate_accuracy(
+            global_model,
+            test_features,
+            test_labels,
+        )
+
+        per_round_accuracies.append(accuracy)
+
+    final_model = build_mlp_classifier(
+        model_config["input_size"],
+        model_config["hidden_size"],
+        model_config["num_classes"],
+    )
+
+    load_model_state(final_model, global_state)
+
+    return final_model, per_round_accuracies
 
 # Step 21 - train_centralized_baseline (not yet solved)
 # TODO: implement
