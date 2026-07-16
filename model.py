@@ -7,6 +7,10 @@ Assembled from your step-by-step solutions.
 import numpy as np
 
 # Step 1 - build_mlp_classifier
+import torch
+import torch.nn as nn
+
+
 class _MLPClassifier(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes):
         super().__init__()
